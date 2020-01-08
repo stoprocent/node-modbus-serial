@@ -177,10 +177,10 @@ RTUBufferedPort.prototype.write = function(data) {
             let byte = data.subarray(0, 1);
             data = data.subarray(1);
             this._client.write(byte);
-            if(data.length > 0) setTimeout(sendit, this._delayBetweenBytes);
+            if(data.length > 0) setTimeout(delayedWrite, this._delayBetweenBytes);
         }).bind(this);
     
-        setTimeout(sendit, this._delayBetweenBytes)
+        setTimeout(delayedWrite, this._delayBetweenBytes)
     }
     else {
         // send buffer to slave
