@@ -31,6 +31,7 @@ var RTUBufferedPort = function(path, options) {
     this._id = 0;
     this._cmd = 0;
     this._length = 0;
+    this._delayBetweenBytes = options.delayBetweenBytes || 0;
 
     // create the SerialPort
     this._client = new SerialPort(path, options);
@@ -168,8 +169,23 @@ RTUBufferedPort.prototype.write = function(data) {
             break;
     }
 
-    // send buffer to slave
-    this._client.write(data);
+    // This is a stupid hack to get Orno Energy Meter (ORNO OR-WE-516/517) to work.
+    if (this._delayBetweenBytes > 0) {
+        let delayedWrite;
+
+        delayedWrite = (() => {
+            let byte = data.subarray(0, 1);
+            data = data.subarray(1);
+            this._client.write(byte);
+            if(data.length > 0) setTimeout(sendit, this._delayBetweenBytes);
+        }).bind(this);
+    
+        setTimeout(sendit, this._delayBetweenBytes)
+    }
+    else {
+        // send buffer to slave
+        this._client.write(data);
+    }
 
     modbusSerialDebug({
         action: "send serial rtu buffered",
